@@ -1,8 +1,49 @@
 <?php
-	session_start();
+	  session_start();
     header("X-XSS-Protection: 1; mode=block");
     require('config.php');
     include('header.php');
+    //total orders
+    $query = "select count(*) from orders where 1";
+    $result = mysqli_query($conn,$query);
+    $row = mysqli_fetch_assoc($result);
+    $r = implode("",$row);
+
+    //orders_delieverd
+    $query1 = "select count(*) from agents where order_status = 'shipped'";
+    $result1 = mysqli_query($conn,$query1);
+    $row1 = mysqli_fetch_assoc($result1);
+    $r1 = implode("",$row1);
+    //echo $r1;
+
+    //orders remaining
+    $query2 = "select count(*) from agents where order_status != 'shipped'";
+    $result2 = mysqli_query($conn,$query2);
+    $row2 = mysqli_fetch_assoc($result2);
+    //echo $row2['agent_id'];
+    $r2 = implode("",$row2);
+    //echo $r2;
+
+    //total amount recieved
+    $query3 = "select sum(prod_price) from orders ord ,product prd where ord.prod_id=prd.prod_id and ord.mop = 'cash'";
+    $result3 = mysqli_query($conn,$query3);
+    $row3 = mysqli_fetch_assoc($result3);
+    $r3 = implode("",$row3);
+    //echo $r3;
+
+    //total amount remaining
+    $query4 = "select sum(prod_price) from orders ord ,product prd where ord.prod_id=prd.prod_id and ord.mop != 'cash'";
+    $result4 = mysqli_query($conn,$query4);
+    $row4 = mysqli_fetch_assoc($result4);
+    $r4 = implode("",$row4);
+    echo $r4;
+
+    $query4 = "insert into revenue(total_orders,orders_delved,orders_remn,amount_cash,amount_online) values('$r','$r1','$r2','$r3','$r4')";
+    $result4 = mysqli_query($conn,$query4);
+    
+    $query5 = "select * from revenue";
+    $result5 = mysqli_query($conn,$query5);
+    $row5 = mysqli_fetch_assoc($result5);
   ?>
   <!DOCTYPE html>
   <html>
@@ -10,10 +51,6 @@
   	<title>Products</title>
   </head>
   <body>
-  	<?php
-  	$query = "SELECT * FROM `orders` where order_status like '%shipped'";
-  	$result = mysqli_query($conn,$query);
-  	?>
   	<div class="container" align="center">
   		
 	  	<table class="Product-table" id="Prod">
@@ -26,20 +63,15 @@
 	  			
 	  		</tr>
 	  		<tbody id="Prod1">
-	  			<!-- <input type="text" id="myInput" name="search" class="form-control" placeholder="Search for products" onkeyup="myFunction()"> -->
-    	  		<?php while ($row = mysqli_fetch_assoc($result)) {
-    	  		?>
+	  			<input type="text" id="myInput" name="search" class="form-control" placeholder="Search for products" onkeyup="myFunction()">
     	  		<tr>
-    			  	  <td><?php echo $row['order_status ']; ?></td>
-    			  	<!-- 	<td><?php echo $row['prod_name']; ?></td>
-    			  		<td><?php echo $row['prod_price']; ?></td>
-    			  		<td><?php echo $row['prod_rating']; ?></td>
-    			  		<td><?php echo $row['prod_avl']; ?></td> --> -->
+    			  	<td><?php echo $row5['total_orders']; ?></td> 
+    			  	<td><?php echo $row5['orders_delved']; ?></td>
+    			  	<td><?php echo $row5['orders_remn']; ?></td>
+    			  	<td><?php echo $row5['amount_cash']; ?></td>
+    			  	<td><?php echo $row5['amount_online']; ?></td>
     			  		
     	  		</tr>
-    	  		<?php 
-    	  		}
-    	  		?>
 	  	    </tbody>
 	  	</table>
 	</div>
